@@ -1,0 +1,4 @@
+GOOGLE_API_KEY : 'AIzaSyCGffc3SkFRq49kAXxJfBeyw5-k7alhsp8'
+MODEL_ID : 'models/text-embedding-004'
+NUMBER_OF_DOCUMENT: 1000
+DEFAULT_VECTOR_STORE_SAVING_PATH : 'src/database'
