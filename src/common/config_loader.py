@@ -4,7 +4,7 @@ import yaml
 
 class ConfigLoader:
     def __init__(self):
-        config_file_path = os.path.join(os.getcwd(), 'src/config.yaml')
+        config_file_path = os.path.join(os.getcwd(), 'src/venv/config.yaml')
         try:
             config_data = None
             file = open(config_file_path, 'r')
