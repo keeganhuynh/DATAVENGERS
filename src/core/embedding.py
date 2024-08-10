@@ -25,5 +25,10 @@ class Embedding(Logger):
     def get_embedding(self) -> object:
         '''
         Take embedding from google vertex AI
-        '''                    
-        return self.embedding
+        '''
+        try:     
+            return self.embedding
+        except:
+            self.error(
+                message=f"There are no embedding were found"
+            )
