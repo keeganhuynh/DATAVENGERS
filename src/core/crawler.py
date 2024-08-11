@@ -11,10 +11,9 @@ import aiofiles
 import chardet
 
 class DataCrawler(Logger):
-    def __init__(self, base_url: str = "https://tuyensinh.uel.edu.vn", max_depth: int = 0,
-                 download_folder: str = "src/database/extracted_files/pdf_files"):
+    def __init__(self, base_url: str = None, max_depth: int = None, download_folder: str = None):
         """
-        Initialize the DataCrawler with a base URL, maximum depth for crawling, and a folder to save downloaded PDFs.
+        Initialize the DataCrawler with optional parameters.
 
         Args:
         - base_url (str): The starting URL for the crawl.
@@ -22,14 +21,14 @@ class DataCrawler(Logger):
         - download_folder (str): The folder where PDF files will be saved.
         """
         super().__init__()
-        self.base_url = base_url
+        self.base_url = base_url if base_url else "https://tuyensinh.uel.edu.vn"
         self.page_urls: List[str] = []
         self.page_contents: List[Dict[str, Union[str, List[str]]]] = []
         self.pdf_urls: Set[str] = set()
         self.visited_urls: Set[str] = set()
         self.visited_hashes: Set[str] = set()  # For content deduplication
-        self.max_depth = max_depth
-        self.download_folder = download_folder
+        self.max_depth = max_depth if max_depth else 0
+        self.download_folder = download_folder if download_folder else "src/database/extracted_files/pdf_files"
 
         # Exclude social media prefixes and video file extensions
         self.excluded_prefixes = ['facebook', 'linkedin', 'zalo', 'tiktok', 'google']
@@ -145,14 +144,14 @@ class DataCrawler(Logger):
 
     async def fetch_page_contents(self, session: aiohttp.ClientSession, url: str) -> Dict[str, Union[str, List[str]]]:
         """
-        Asynchronously fetch and return the content (title, description, text) of the page.
+        Asynchronously fetch and return the content (title, metadata, text) of the page.
 
         Args:
         - session (aiohttp.ClientSession): The current session for HTTP requests.
         - url (str): The URL of the page to fetch content from.
 
         Returns:
-        - Dict[str, Union[str, List[str]]]: A dictionary containing the page's title, description, text, and URL.
+        - Dict[str, Union[str, List[str]]]: A dictionary containing the page's title, metadata, text, and URL.
         """
         self.info(f"Fetching page contents from URL: {url}")
         html = await self.fetch_text_with_retries(session, url)
@@ -169,15 +168,21 @@ class DataCrawler(Logger):
 
         soup = BeautifulSoup(html, 'html.parser')
         title = soup.title.string if soup.title else "No Title"
-        description = soup.find("meta", attrs={"name": "description"})
-        description = description["content"] if description else "No Description"
+
+        # Extract all metadata tags
+        metadata = {meta.attrs.get("name", meta.attrs.get("property", "unknown")): meta.attrs.get("content", "")
+                    for meta in soup.find_all("meta")}
+
+        # Join metadata into a single string with key-value pairs
+        metadata_str = "; ".join([f"{key}: {value}" for key, value in metadata.items()])
+
         page_text = soup.get_text(separator='\n', strip=True)
 
         page_content = {
+            "url": url,
             "title": title,
-            "description": description,
-            "content": page_text,
-            "url": url
+            "metadata": metadata_str,
+            "contents": page_text
         }
         self.info(f"Extracted contents from {url}")
         return page_content
