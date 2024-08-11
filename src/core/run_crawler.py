@@ -6,12 +6,12 @@ def main():
     base_url = "https://tuyensinh.uel.edu.vn"
 
     # Define the maximum depth for recursive crawling
-    max_depth = 7
+    max_depth = 3
 
     # Define paths for saving the results
     extracted_files_dir = "src/database/extracted_files"
     download_folder = f"{extracted_files_dir}/pdf_files"
-    output_csv = f"{extracted_files_dir}/page_contents.csv"
+    output_csv = f"{extracted_files_dir}/page_contents_v3.csv"
 
     # Initialize the DataCrawler
     crawler = DataCrawler(
